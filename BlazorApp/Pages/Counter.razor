@@ -2,10 +2,11 @@
 
 <h1>Counter</h1>
 
-<p>Current count: @currentCount</p>
+<p>Current count: 0</p>
+<BSButton OnClick="IncrementCount" Color="Color.Info">Don't Click me</BSButton><br />
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
-
+@if (@currentCount >= 3 && @currentCount <= 7)
+{<br /><p><span style="color:darkseagreen">Please!</span> Stop Clicking the button</p>}
 @code {
     private int currentCount = 0;
 

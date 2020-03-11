@@ -1,0 +1,98 @@
+﻿
+@page "/listcustomers"
+@using BlazorApp.Interface;
+@using BlazorApp.Models;
+@inject ICustomerService CustomerService
+@inject NavigationManager NavigationManager
+
+<h2>Customers Details</h2>
+<p>
+    <RadzenButton Text="Create New Customer" Click="CreateNewCustomer"></RadzenButton>
+</p>
+
+@if (customers == null)
+{
+    <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" /><br/>
+    <form>Welcome to Blazor ! We are waiting to add your first <span style="color:blue">customer</span> !</form>
+}
+else
+{
+    <form>
+        <label for="CustomersPerPage">Choose the number of customers to be displayed per page:</label>
+        <select id="CustomersPerPage" name="CustomersPerPage" @onchange="@DoStuff">
+            <option value=" "> </option>
+            <option value="five">5</option>
+            <option value="ten">10</option>
+            <option value="fifteen">15</option>
+            <option value="twenty">20</option>
+        </select>
+        <p>Currently: @CustomersPerPage Customers per page</p>
+    </form>
+
+    <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="@CustomersPerPage"
+                AllowSorting="true" Data="@customers" TItem="Customer" ColumnWidth="150px" RowSelect="RowSelect">
+        <Columns>
+            <RadzenGridColumn TItem="Customer" Property="CompanyName" Title="CompanyName"></RadzenGridColumn>
+            <RadzenGridColumn TItem="Customer" Property="ContactName" Title="ContactName"></RadzenGridColumn>
+            <RadzenGridColumn TItem="Customer" Property="Country" Title="Country"></RadzenGridColumn>
+            <RadzenGridColumn TItem="Customer" Property="Address" Title="Address"></RadzenGridColumn>
+            <RadzenGridColumn TItem="Customer" Property="City" Title="City"></RadzenGridColumn>
+            <RadzenGridColumn TItem="Customer" Property="Region" Title="Region"></RadzenGridColumn>
+            <RadzenGridColumn TItem="Customer" Property="PostalCode" Title="PostalCode"></RadzenGridColumn>
+            <RadzenGridColumn TItem="Customer" Property="Phone" Title="Phone"></RadzenGridColumn>
+            <RadzenGridColumn TItem="Customer">
+                <Template Context="data">
+                    <a style="color:grey" href='/editcustomer/@data.Id'>&nbsp;&nbsp; Edit &nbsp;&nbsp;</a>
+                    <a style="color:red" href='/deletecustomer/@data.Id'>&nbsp;&nbsp;&nbsp;Delete</a>
+                </Template>
+            </RadzenGridColumn>
+
+
+        </Columns>
+    </RadzenGrid>
+
+}
+@code {
+    IEnumerable<Customer> customers;
+    bool state = false;
+    public static int CustomersPerPage { get; set; } = 5;
+    Customer SelectedCustomer = null;
+
+    void DoStuff(ChangeEventArgs e)
+    {
+        switch (e.Value)
+        {
+            case "five": if (CustomersPerPage == 5) { break; } else { CustomersPerPage = 5; state = true; break; }
+            case "ten": if (CustomersPerPage == 10) { break; } else {CustomersPerPage = 10; state = true; break; }
+            case "fifteen":if (CustomersPerPage == 15) { break; } else { CustomersPerPage = 15; state = true; break; }
+            case "twenty":if (CustomersPerPage == 20) { break; } else { CustomersPerPage = 20; state = true; break; }
+            default:
+                break;
+        }
+        Console.WriteLine("It is definitely: " + CustomersPerPage);
+        if (state) {
+
+            // except the two lines beneath we can also use NavigationManager.NavigateTo("listcustomers",true); but it reloads the page
+            NavigationManager.NavigateTo("nowhere");
+            NavigationManager.NavigateTo("listcustomers");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("listcustomers");
+        }
+    }
+
+    void RowSelect(Customer c)
+    {
+        SelectedCustomer = c;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        customers = await CustomerService.GetCustomers();
+    }
+
+    protected void CreateNewCustomer() { NavigationManager.NavigateTo("addcustomer"); }
+
+}     

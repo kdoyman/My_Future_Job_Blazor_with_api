@@ -1,0 +1,64 @@
+﻿@page "/addcustomer"
+@inject NavigationManager NavigationManager
+@using BlazorApp.Interface;
+@using BlazorApp.Models
+@inject ICustomerService CustomerService
+
+<h2>Create Customer</h2>
+<hr />
+
+<EditForm Model="@customer" OnValidSubmit="@CreateCustomer">
+    <DataAnnotationsValidator />
+        <ValidationSummary />
+    <p>
+        <label for="CompanyName">CompanyName:</label>
+        <InputText id="CompanyName" @bind-Value="customer.CompanyName" />
+    </p>
+    <p>
+        <label for="ContactName">ContactName&nbsp;&nbsp;&nbsp;&nbsp;:</label>
+        <InputText id="ContactName" @bind-Value="customer.ContactName" />
+    </p>
+    <p>
+        <label for="Address">Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</label>
+        <InputText id="Address" @bind-Value="customer.Address" />
+    </p>
+    <p>
+        <label for="City">City&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</label>
+        <InputText id="City" @bind-Value="customer.City" />
+    </p>
+    <p>
+        <label for="Region">Region&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</label>
+        <InputText id="Region" @bind-Value="customer.Region" />
+    </p>
+    <p>
+        <label for="PostalCode">PostalCode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</label>
+        <InputText id="PostalCode" @bind-Value="customer.PostalCode" />
+    </p>
+    <p>
+        <label for="Country">Country&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</label>
+        <InputText id="Country" @bind-Value="customer.Country" />
+    </p>
+    <p>
+        <label for="Phone">Phone&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</label>
+        <InputText id="Phone" @bind-Value="customer.Phone" />
+    </p>
+           
+   <BSButton type="submit" Color="Color.Success">Save</BSButton>
+    <BSButton OnClick="Cancel" Color="Color.Danger">Cancel</BSButton>
+</EditForm>
+
+@code {
+
+    Customer customer = new Customer();
+
+    protected async Task CreateCustomer()
+    {
+           await CustomerService.CreateCustomer(customer);
+          NavigationManager.NavigateTo("listcustomers");        
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("listcustomers");
+    }
+}     

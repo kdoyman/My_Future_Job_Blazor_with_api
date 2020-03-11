@@ -9,6 +9,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorApp.Data;
+using BlazorStrap;
+using BlazorApp.Models;
+using BlazorApp.Interface;
+using Microsoft.Extensions.Options;
+using BlazorApp.Services;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace BlazorApp
 {
@@ -27,7 +33,40 @@ namespace BlazorApp
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddBootstrapCss();
             services.AddSingleton<WeatherForecastService>();
+
+            services.Configure<CustomerDbSettings>(Configuration.GetSection(nameof(CustomerDbSettings)));
+            services.AddSingleton<ICustomerDbSettings>(sp => sp.GetRequiredService<IOptions<CustomerDbSettings>>().Value);
+
+            services.AddScoped<ICustomerService, CustomerService>();
+
+            services.AddServerSideBlazor().AddCircuitOptions(o => o.DetailedErrors = true);
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = "Cookies";
+                options.DefaultChallengeScheme = "oidc";
+            })
+                .AddCookie("Cookies")
+                .AddOpenIdConnect("oidc", options =>
+                                {
+                                options.Authority = "https://demo.identityserver.io/";
+                            options.ClientId = "interactive.confidential.short"; // 75 seconds
+                            options.ClientSecret = "secret";
+                            options.ResponseType = "code";
+                            options.SaveTokens = true;
+                            options.GetClaimsFromUserInfoEndpoint = true;
+
+                            options.Events = new OpenIdConnectEvents
+                            {
+                                OnAccessDenied = context =>
+                                {
+                                    context.HandleResponse();
+                                    context.Response.Redirect("/");
+                                    return Task.CompletedTask;
+                                }
+                            };
+                                 });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +82,10 @@ namespace BlazorApp
             }
 
             app.UseStaticFiles();
+
+            app.UseAuthentication();
+
+            app.UseHttpsRedirection();
 
             app.UseRouting();
 
