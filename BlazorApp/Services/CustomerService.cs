@@ -57,12 +57,13 @@ namespace BlazorApp.Services
             }
         }
 
-        public async Task<List<Customer>> GetCustomers()
+        public async Task<long> GetCustCount() { return await _customers.Find(custo => true).CountDocumentsAsync(); }
+
+        public async Task<List<Customer>> GetCustomers(int pagenum, int customersPerPage)
         {
             try
-            {
-
-                return await _customers.Find(custo => true).ToListAsync();
+            {                  
+                return await _customers.Find(custo => true).Limit(customersPerPage).Skip((pagenum-1)*customersPerPage).ToListAsync();
             }
             catch
             {
@@ -82,5 +83,28 @@ namespace BlazorApp.Services
                 return null;
             }
         }
+
+        public List<Customer> Get()
+        {
+            return _customers.Find(custo => true).ToList();
+        }
+        public Customer Get(string id) =>
+          _customers.Find<Customer>(custo => custo.Id == id).FirstOrDefault();
+
+        public Customer Create(Customer custo)
+        {
+            _customers.InsertOne(custo);
+            return custo;
+        }
+
+        public void Update(string id, Customer custoIn) =>
+            _customers.ReplaceOne(custo => custo.Id == id, custoIn);
+
+        public void Remove(Customer custoIn) =>
+            _customers.DeleteOne(custo => custo.Id == custoIn.Id);
+
+        public void Remove(string id) =>
+            _customers.DeleteOne(custo => custo.Id == id);
+
     }
 }

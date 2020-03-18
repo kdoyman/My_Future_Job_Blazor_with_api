@@ -12,7 +12,8 @@
 
 @if (customers == null)
 {
-    <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" /><br/>
+    <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" />
+    <br />
     <form>Welcome to Blazor ! We are waiting to add your first <span style="color:blue">customer</span> !</form>
 }
 else
@@ -28,6 +29,7 @@ else
         </select>
         <p>Currently: @CustomersPerPage Customers per page</p>
     </form>
+
 
     <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="@CustomersPerPage"
                 AllowSorting="true" Data="@customers" TItem="Customer" ColumnWidth="150px" RowSelect="RowSelect">
@@ -51,6 +53,37 @@ else
         </Columns>
     </RadzenGrid>
 
+    @if (active)
+    {
+        <BSPagination Alignment="Alignment.Right">
+            <BSPaginationItem>
+                <BSButton Color="Color.Light" OnClick="onclickfirst">First</BSButton>
+            </BSPaginationItem>
+            <BSPaginationItem>
+                <BSButton Color="Color.Light" OnClick="onclickbw">&lt;&lt;</BSButton>
+            </BSPaginationItem>
+            <BSPaginationItem>
+                <BSButton Color="Color.Light" OnClick="onclicknext">&gt;&gt;</BSButton>
+            </BSPaginationItem>
+            <BSPaginationItem>
+                <BSButton Color="Color.Light" OnClick="onclicklast">Last</BSButton>
+            </BSPaginationItem>
+            <BSPaginationItem>
+                <BSBasicInput Id="Pagenumber" InputType="InputType.Number" min="1" max="@MaxPage" PlaceHolder="@Pagenumber" @bind-Value="@Pagenumber" @onclick="@setpage" @onfocusout="@setpage" @onkeydown="@setpage" @onkeyup="@setpage" />
+            </BSPaginationItem>
+            <BSPaginationItem>
+                <h2>of @MaxPage</h2>
+            </BSPaginationItem>
+        </BSPagination>
+    }
+    else
+    {
+        <BSPagination Alignment="Alignment.Right">
+            <BSPaginationItem>
+                <h3>Page @MaxPage of @MaxPage</h3>
+            </BSPaginationItem>
+        </BSPagination>
+    }
 }
 @code {
     IEnumerable<Customer> customers;
@@ -63,14 +96,15 @@ else
         switch (e.Value)
         {
             case "five": if (CustomersPerPage == 5) { break; } else { CustomersPerPage = 5; state = true; break; }
-            case "ten": if (CustomersPerPage == 10) { break; } else {CustomersPerPage = 10; state = true; break; }
-            case "fifteen":if (CustomersPerPage == 15) { break; } else { CustomersPerPage = 15; state = true; break; }
-            case "twenty":if (CustomersPerPage == 20) { break; } else { CustomersPerPage = 20; state = true; break; }
+            case "ten": if (CustomersPerPage == 10) { break; } else { CustomersPerPage = 10; state = true; break; }
+            case "fifteen": if (CustomersPerPage == 15) { break; } else { CustomersPerPage = 15; state = true; break; }
+            case "twenty": if (CustomersPerPage == 20) { break; } else { CustomersPerPage = 20; state = true; break; }
             default:
                 break;
         }
         Console.WriteLine("It is definitely: " + CustomersPerPage);
-        if (state) {
+        if (state)
+        {
 
             // except the two lines beneath we can also use NavigationManager.NavigateTo("listcustomers",true); but it reloads the page
             NavigationManager.NavigateTo("nowhere");
@@ -86,13 +120,66 @@ else
     {
         SelectedCustomer = c;
     }
-
-    protected override async Task OnInitializedAsync()
+    public async Task setpage()
     {
 
-        customers = await CustomerService.GetCustomers();
+        Pagenumber = Pagenumber;
+        await OnInitializedAsync();
+    }
+
+    protected async Task onclick(MouseEventArgs e)
+    {
+
+        await OnInitializedAsync();
+    }
+
+    protected async Task onclicklast(MouseEventArgs e)
+    {
+        Pagenumber = MaxPage;
+        await OnInitializedAsync();
+    }
+
+    protected async Task onclickfirst(MouseEventArgs e)
+    {
+        Pagenumber = 1;
+        await OnInitializedAsync();
+    }
+
+    protected async Task onclicknext(MouseEventArgs e)
+    {
+        Pagenumber = Pagenumber + 1;
+        await OnInitializedAsync();
+
+    }
+
+    protected async Task onclickbw(MouseEventArgs e)
+    {
+        Pagenumber--;
+        await OnInitializedAsync();
+    }
+
+    public int Pagenumber { get; set; } = 1;
+
+    private long custcountl;
+    private bool active = true;
+    public int MaxPage
+    {
+        get
+        {
+            if (Math.Ceiling((double)(custcountl) / CustomersPerPage) <= 1) { active = false; }
+            return Convert.ToInt32(Math.Ceiling(Convert.ToDouble(custcountl) / CustomersPerPage));
+        }
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        custcountl = await CustomerService.GetCustCount();
+        if (Pagenumber > MaxPage && MaxPage != 0) { Pagenumber = MaxPage; }
+        else if (Pagenumber < 1) { Pagenumber = 1; }
+        customers = await CustomerService.GetCustomers(Pagenumber, CustomersPerPage);
+
     }
 
     protected void CreateNewCustomer() { NavigationManager.NavigateTo("addcustomer"); }
 
-}     
+}
